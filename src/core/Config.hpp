@@ -7,7 +7,6 @@ namespace Config {
 
     inline constexpr int WINDOW_WIDTH = 1280;
     inline constexpr int WINDOW_HEIGHT = 720;
-    inline constexpr int TARGET_FPS = 60;
     inline constexpr const char* WINDOW_TITLE = "Alien Invasion - OOP vs DOD";
 
     inline constexpr size_t DEFAULT_ENTITIES = 1000;
