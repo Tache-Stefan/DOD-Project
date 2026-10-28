@@ -61,8 +61,10 @@ target_link_libraries(rlImGui_lib PUBLIC
     raylib
 )
 
+file(GLOB_RECURSE PROJECT_SOURCES CONFIGURE_DEPENDS "src/*.cpp")
+
 add_executable(AlienInvasion
-    src/main.cpp
+    ${PROJECT_SOURCES}
 )
 
 target_include_directories(AlienInvasion PRIVATE
