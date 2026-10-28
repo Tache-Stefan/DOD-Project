@@ -1,5 +1,4 @@
 #include "UIManager.hpp"
-#include "oop/OOPSimulation.hpp"
 #include <raylib.h>
 #include <imgui.h>
 #include <rlImGui.h>
@@ -51,8 +50,8 @@ void UIManager::render(UIState& state, ISimulation* activeSim) {
                            Config::MIN_SIM_SPEED, Config::MAX_SIM_SPEED, "%.2fx");
         ImGui::Checkbox("Pause Simulation", &state.isPaused);
         if (ImGui::Checkbox("Ball Collisions", &state.enableCollisions)) {
-            if (auto* oopSim = dynamic_cast<OOPSimulation*>(activeSim)) {
-                oopSim->setCollisionsEnabled(state.enableCollisions);
+            if (activeSim) {
+                activeSim->setCollisionsEnabled(state.enableCollisions);
             }
         }
 

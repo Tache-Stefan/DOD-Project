@@ -29,4 +29,7 @@ public:
     [[nodiscard]] virtual size_t getTheoreticalMemoryBytes() const = 0;
 
     virtual void setWorldBounds(float width, float height) = 0;
+
+    virtual void setCollisionsEnabled(bool enabled) = 0;
+    [[nodiscard]] virtual bool areCollisionsEnabled() const = 0;
 };

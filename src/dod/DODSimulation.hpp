@@ -34,12 +34,14 @@ public:
                                      m_radius[i], m_worldWidth, m_worldHeight);
         }
 
-        for (size_t i = 0; i < count; ++i) {
-            for (size_t j = i + 1; j < count; ++j) {
-                Physics::resolveCircleCollision(
-                    m_posX[i], m_posY[i], m_velX[i], m_velY[i], m_radius[i],
-                    m_posX[j], m_posY[j], m_velX[j], m_velY[j], m_radius[j]
-                );
+        if (m_collisionsEnabled) {
+            for (size_t i = 0; i < count; ++i) {
+                for (size_t j = i + 1; j < count; ++j) {
+                    Physics::resolveCircleCollision(
+                        m_posX[i], m_posY[i], m_velX[i], m_velY[i], m_radius[i],
+                        m_posX[j], m_posY[j], m_velX[j], m_velY[j], m_radius[j]
+                    );
+                }
             }
         }
     }
@@ -116,6 +118,14 @@ public:
         m_worldHeight = height;
     }
 
+    void setCollisionsEnabled(bool enabled) noexcept override {
+        m_collisionsEnabled = enabled;
+    }
+
+    [[nodiscard]] bool areCollisionsEnabled() const noexcept override {
+        return m_collisionsEnabled;
+    }
+
 private:
     std::vector<float> m_posX;
     std::vector<float> m_posY;
@@ -125,4 +135,5 @@ private:
 
     float m_worldWidth = static_cast<float>(Config::WINDOW_WIDTH);
     float m_worldHeight = static_cast<float>(Config::WINDOW_HEIGHT);
+    bool m_collisionsEnabled = true;
 };

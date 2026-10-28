@@ -73,7 +73,7 @@ size_t OOPSimulation::getEntityCount() const {
 }
 
 std::string_view OOPSimulation::getName() const {
-    return "OOP (Array of Structures)";
+    return "OOP";
 }
 
 SimArchitecture OOPSimulation::getArchitecture() const {

@@ -26,8 +26,8 @@ public:
 
     void setWorldBounds(float width, float height) override;
 
-    void setCollisionsEnabled(bool enabled) noexcept { collisionsEnabled = enabled; }
-    [[nodiscard]] bool areCollisionsEnabled() const noexcept { return collisionsEnabled; }
+    void setCollisionsEnabled(bool enabled) noexcept override { collisionsEnabled = enabled; }
+    [[nodiscard]] bool areCollisionsEnabled() const noexcept override { return collisionsEnabled; }
 
     [[nodiscard]] const std::vector<std::unique_ptr<Actor>>& getEntities() const noexcept {
         return entities;

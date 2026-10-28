@@ -6,7 +6,7 @@
 #include "ui/UIManager.hpp"
 #include <memory>
 
-static std::unique_ptr<ISimulation> createSimulation(SimArchitecture arch, size_t entityCount, float width, float height) {
+static std::unique_ptr<ISimulation> createSimulation(SimArchitecture arch, size_t entityCount, float width, float height, bool enableCollisions = true) {
     std::unique_ptr<ISimulation> sim;
     if (arch == SimArchitecture::DOD) {
         sim = std::make_unique<DODSimulation>();
@@ -14,6 +14,7 @@ static std::unique_ptr<ISimulation> createSimulation(SimArchitecture arch, size_
         sim = std::make_unique<OOPSimulation>();
     }
     sim->init(entityCount, width, height);
+    sim->setCollisionsEnabled(enableCollisions);
     return sim;
 }
 
@@ -35,7 +36,8 @@ int main() {
         uiState.selectedArch,
         static_cast<size_t>(uiState.entityCount),
         static_cast<float>(Config::WINDOW_WIDTH),
-        static_cast<float>(Config::WINDOW_HEIGHT)
+        static_cast<float>(Config::WINDOW_HEIGHT),
+        uiState.enableCollisions
     );
     SimArchitecture activeArch = uiState.selectedArch;
 
@@ -50,7 +52,8 @@ int main() {
                 activeArch,
                 static_cast<size_t>(uiState.entityCount),
                 screenW,
-                screenH
+                screenH,
+                uiState.enableCollisions
             );
         }
 
