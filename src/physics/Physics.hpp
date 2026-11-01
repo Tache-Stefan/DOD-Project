@@ -11,11 +11,6 @@ namespace Physics {
         y += vy * dt;
     }
 
-    inline void integratePosition(Vector2& pos, Vector2 vel, float dt) {
-        pos.x += vel.x * dt;
-        pos.y += vel.y * dt;
-    }
-
     inline void resolveBoundary(float& x, float& y, float& vx, float& vy,
                                 float radius, float worldWidth, float worldHeight,
                                 float restitution = Config::RESTITUTION) {
@@ -40,12 +35,6 @@ namespace Physics {
             y = worldHeight - radius;
             vy = -vy * restitution;
         }
-    }
-
-    inline void resolveBoundary(Vector2& pos, Vector2& vel,
-                                float radius, float worldWidth, float worldHeight,
-                                float restitution = Config::RESTITUTION) {
-        resolveBoundary(pos.x, pos.y, vel.x, vel.y, radius, worldWidth, worldHeight, restitution);
     }
 
     inline bool resolveCircleCollision(
@@ -111,30 +100,6 @@ namespace Physics {
         return resolveCircleCollision(x1, y1, vx1, vy1, r1, Config::BALL_MASS,
                                       x2, y2, vx2, vy2, r2, Config::BALL_MASS,
                                       restitution);
-    }
-
-    inline bool resolveCircleCollision(
-        Vector2& pos1, Vector2& vel1, float r1, float m1,
-        Vector2& pos2, Vector2& vel2, float r2, float m2,
-        float restitution = Config::RESTITUTION
-    ) {
-        return resolveCircleCollision(
-            pos1.x, pos1.y, vel1.x, vel1.y, r1, m1,
-            pos2.x, pos2.y, vel2.x, vel2.y, r2, m2,
-            restitution
-        );
-    }
-
-    inline bool resolveCircleCollision(
-        Vector2& pos1, Vector2& vel1, float r1,
-        Vector2& pos2, Vector2& vel2, float r2,
-        float restitution = Config::RESTITUTION
-    ) {
-        return resolveCircleCollision(
-            pos1.x, pos1.y, vel1.x, vel1.y, r1, Config::BALL_MASS,
-            pos2.x, pos2.y, vel2.x, vel2.y, r2, Config::BALL_MASS,
-            restitution
-        );
     }
 
 }
