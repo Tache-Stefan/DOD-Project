@@ -23,15 +23,9 @@ public:
 
     void update(float dt) override {
         const size_t count = m_posX.size();
-        if (count == 0) return;
 
         for (size_t i = 0; i < count; ++i) {
             Physics::integratePosition(m_posX[i], m_posY[i], m_velX[i], m_velY[i], dt);
-        }
-
-        for (size_t i = 0; i < count; ++i) {
-            Physics::resolveBoundary(m_posX[i], m_posY[i], m_velX[i], m_velY[i],
-                                     m_radius[i], m_worldWidth, m_worldHeight);
         }
 
         if (m_collisionsEnabled) {
@@ -43,6 +37,11 @@ public:
                     );
                 }
             }
+        }
+
+        for (size_t i = 0; i < count; ++i) {
+            Physics::resolveBoundary(m_posX[i], m_posY[i], m_velX[i], m_velY[i],
+                                     m_radius[i], m_worldWidth, m_worldHeight);
         }
     }
 
