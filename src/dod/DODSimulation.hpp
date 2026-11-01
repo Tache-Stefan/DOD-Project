@@ -7,7 +7,7 @@
 
 #include <vector>
 #include <cmath>
-#include <cstdlib>
+#include <random>
 #include <algorithm>
 
 class DODSimulation : public ISimulation {
@@ -67,19 +67,30 @@ public:
             m_velY.reserve(count);
             m_radius.reserve(count);
 
+            std::random_device rd;
+            std::mt19937 gen(rd());
+
+            const float r = Config::BALL_RADIUS;
+            const float padding = Config::SPAWN_BORDER_PADDING;
+            const float minX = r + padding;
+            const float maxX = (m_worldWidth > minX + 1.0f) ? (m_worldWidth - r - padding) : minX;
+            const float minY = r + padding;
+            const float maxY = (m_worldHeight > minY + 1.0f) ? (m_worldHeight - r - padding) : minY;
+
+            std::uniform_real_distribution<float> posXDist(minX, maxX);
+            std::uniform_real_distribution<float> posYDist(minY, maxY);
+
+            const float maxSpeed = Config::BALL_MAX_SPAWN_SPEED;
+            std::uniform_real_distribution<float> velDist(-maxSpeed, maxSpeed);
+
             for (size_t i = current; i < count; ++i) {
-                const float r = Config::BALL_RADIUS;
-                const float minX = r + Config::SPAWN_BORDER_PADDING;
-                const float maxX = (m_worldWidth > r * 2.0f) ? (m_worldWidth - r - Config::SPAWN_BORDER_PADDING) : minX;
-                const float minY = r + Config::SPAWN_BORDER_PADDING;
-                const float maxY = (m_worldHeight > r * 2.0f) ? (m_worldHeight - r - Config::SPAWN_BORDER_PADDING) : minY;
+                float x = posXDist(gen);
+                float y = posYDist(gen);
+                float vx = velDist(gen);
+                float vy = velDist(gen);
 
-                const float x = minX + static_cast<float>(rand()) / (static_cast<float>(RAND_MAX / (maxX - minX + 1.0f)));
-                const float y = minY + static_cast<float>(rand()) / (static_cast<float>(RAND_MAX / (maxY - minY + 1.0f)));
-
-                const float speed = Config::BALL_MAX_SPAWN_SPEED;
-                const float vx = -speed + static_cast<float>(rand()) / (static_cast<float>(RAND_MAX / (2.0f * speed)));
-                const float vy = -speed + static_cast<float>(rand()) / (static_cast<float>(RAND_MAX / (2.0f * speed)));
+                if (std::abs(vx) < 15.0f) vx = (vx < 0.0f) ? -25.0f : 25.0f;
+                if (std::abs(vy) < 15.0f) vy = (vy < 0.0f) ? -25.0f : 25.0f;
 
                 m_posX.push_back(x);
                 m_posY.push_back(y);
