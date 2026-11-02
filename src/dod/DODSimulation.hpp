@@ -20,6 +20,8 @@ public:
     void init(size_t initialEntities, float worldWidth, float worldHeight) override {
         m_worldWidth = worldWidth;
         m_worldHeight = worldHeight;
+        m_raceActive = false;
+        m_teamCounts.fill(0);
         m_grid.init(m_worldWidth, m_worldHeight, Config::GRID_CELL_SIZE);
         setEntityCount(initialEntities);
     }
@@ -38,10 +40,37 @@ public:
             }
 
             m_grid.forEachCandidatePair([this](uint32_t i, uint32_t j) {
-                Physics::resolveCircleCollision(
+                if (Physics::resolveCircleCollision(
                     m_posX[i], m_posY[i], m_velX[i], m_velY[i], m_radius[i],
                     m_posX[j], m_posY[j], m_velX[j], m_velY[j], m_radius[j]
-                );
+                )) {
+                    if (m_raceActive && m_team[i] != m_team[j]) {
+                        const uint8_t teamI = m_team[i];
+                        const uint8_t teamJ = m_team[j];
+                        if (teamI < Config::NUM_TEAMS && teamJ < Config::NUM_TEAMS) {
+                            const size_t countI = m_teamCounts[teamI];
+                            const size_t countJ = m_teamCounts[teamJ];
+                            const size_t total = countI + countJ;
+
+                            static uint32_t rng = 0x853c49e6;
+                            rng ^= rng << 13;
+                            rng ^= rng >> 17;
+                            rng ^= rng << 5;
+
+                            if (total > 0 && (rng % total) < countI) {
+                                m_team[j] = teamI;
+                                m_color[j] = m_color[i];
+                                if (m_teamCounts[teamJ] > 0) m_teamCounts[teamJ]--;
+                                m_teamCounts[teamI]++;
+                            } else {
+                                m_team[i] = teamJ;
+                                m_color[i] = m_color[j];
+                                if (m_teamCounts[teamI] > 0) m_teamCounts[teamI]--;
+                                m_teamCounts[teamJ]++;
+                            }
+                        }
+                    }
+                }
             });
         }
 
@@ -54,7 +83,7 @@ public:
     void render() const override {
         const size_t count = m_posX.size();
         for (size_t i = 0; i < count; ++i) {
-            CircleTexture::draw(m_posX[i], m_posY[i], m_radius[i], Config::COLOR_BALL_DOD);
+            CircleTexture::draw(m_posX[i], m_posY[i], m_radius[i], m_color[i]);
         }
     }
 
@@ -71,6 +100,8 @@ public:
             m_velX.reserve(count);
             m_velY.reserve(count);
             m_radius.reserve(count);
+            m_team.reserve(count);
+            m_color.reserve(count);
 
             std::random_device rd;
             std::mt19937 gen(rd());
@@ -97,11 +128,22 @@ public:
                 if (std::abs(vx) < 15.0f) vx = (vx < 0.0f) ? -25.0f : 25.0f;
                 if (std::abs(vy) < 15.0f) vy = (vy < 0.0f) ? -25.0f : 25.0f;
 
+                uint8_t team = 0;
+                Color col = Config::COLOR_BALL_DOD;
+                if (m_raceActive) {
+                    team = static_cast<uint8_t>(i % Config::NUM_TEAMS);
+                    col = Config::TEAMS[team].color;
+                }
+                if (team < Config::NUM_TEAMS) {
+                    m_teamCounts[team]++;
+                }
                 m_posX.push_back(x);
                 m_posY.push_back(y);
                 m_velX.push_back(vx);
                 m_velY.push_back(vy);
                 m_radius.push_back(r);
+                m_team.push_back(team);
+                m_color.push_back(col);
             }
         } else if (count < current) {
             m_posX.resize(count);
@@ -109,6 +151,18 @@ public:
             m_velX.resize(count);
             m_velY.resize(count);
             m_radius.resize(count);
+            m_team.resize(count);
+            m_color.resize(count);
+            recomputeTeamCounts();
+        }
+    }
+
+    void recomputeTeamCounts() {
+        m_teamCounts.fill(0);
+        for (uint8_t team : m_team) {
+            if (team < Config::NUM_TEAMS) {
+                m_teamCounts[team]++;
+            }
         }
     }
 
@@ -125,7 +179,38 @@ public:
     }
 
     [[nodiscard]] size_t getTheoreticalMemoryBytes() const override {
-        return m_posX.size() * (sizeof(float) * 5);
+        return m_posX.size() * (sizeof(float) * 5 + sizeof(uint8_t) + sizeof(Color));
+    }
+
+    void startRace() override {
+        m_raceActive = true;
+        m_teamCounts.fill(0);
+        const size_t count = m_team.size();
+        for (size_t i = 0; i < count; ++i) {
+            uint8_t team = static_cast<uint8_t>(i % Config::NUM_TEAMS);
+            m_team[i] = team;
+            m_color[i] = Config::TEAMS[team].color;
+            m_teamCounts[team]++;
+        }
+    }
+
+    void stopRace() override {
+        m_raceActive = false;
+        m_teamCounts.fill(0);
+        const size_t count = m_team.size();
+        for (size_t i = 0; i < count; ++i) {
+            m_team[i] = 0;
+            m_color[i] = Config::COLOR_BALL_DOD;
+        }
+        m_teamCounts[0] = count;
+    }
+
+    [[nodiscard]] bool isRaceActive() const noexcept override {
+        return m_raceActive;
+    }
+
+    [[nodiscard]] std::array<size_t, Config::NUM_TEAMS> getTeamCounts() const override {
+        return m_teamCounts;
     }
 
     void setWorldBounds(float width, float height) override {
@@ -148,9 +233,13 @@ private:
     std::vector<float> m_velX;
     std::vector<float> m_velY;
     std::vector<float> m_radius;
+    std::vector<uint8_t> m_team;
+    std::vector<Color> m_color;
 
     SpatialGrid m_grid;
     float m_worldWidth = static_cast<float>(Config::WINDOW_WIDTH);
     float m_worldHeight = static_cast<float>(Config::WINDOW_HEIGHT);
     bool m_collisionsEnabled = true;
+    bool m_raceActive = false;
+    std::array<size_t, Config::NUM_TEAMS> m_teamCounts{};
 };

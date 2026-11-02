@@ -25,11 +25,22 @@ namespace Config {
     inline constexpr float MAX_SIM_SPEED       = 3.0f;
 
     inline constexpr Color COLOR_BACKGROUND    = { 24, 24, 36, 255 };
-    inline constexpr Color COLOR_BALL_DEFAULT  = { 70, 180, 255, 220 }; // Neon cyan/blue
+    inline constexpr Color COLOR_BALL_DEFAULT  = { 70, 180, 255, 220 };
 
-    inline constexpr Color COLOR_BALL_OOP      = { 255, 110, 110, 220 }; // Neon coral/red
-    inline constexpr Color COLOR_BALL_DOD      = { 70, 180, 255, 220 }; // Neon cyan/blue
+    inline constexpr Color COLOR_BALL_OOP      = { 255, 110, 110, 220 };
+    inline constexpr Color COLOR_BALL_DOD      = { 70, 180, 255, 220 };
 
     inline constexpr Color COLOR_BORDER        = { 102, 191, 255, 80 };
 
+    inline constexpr size_t NUM_TEAMS = 4;
+    struct TeamInfo {
+        const char* name;
+        Color color;
+    };
+    inline constexpr TeamInfo TEAMS[NUM_TEAMS] = {
+        { "Red",    { 255, 75,  75,  240 } },
+        { "Blue",  { 45,  185, 255, 240 } },
+        { "Green",  { 50,  230, 90,  240 } },
+        { "Yellow",  { 255, 220, 40,  240 } }
+    };
 }

@@ -13,6 +13,8 @@ void OOPSimulation::init(size_t initialEntities, float width, float height) {
     grid.init(worldWidth, worldHeight, Config::GRID_CELL_SIZE);
     entities.clear();
     nextEntityId = 1;
+    raceActive = false;
+    teamCounts.fill(0);
     setEntityCount(initialEntities);
 }
  
@@ -50,8 +52,33 @@ void OOPSimulation::resolveCollisions() {
         grid.insert(static_cast<uint32_t>(i), crafts[i]->getPosX(), crafts[i]->getPosY());
     }
  
-    grid.forEachCandidatePair([&crafts](uint32_t i, uint32_t j) {
-        crafts[i]->resolveCollisionWith(*crafts[j]);
+    grid.forEachCandidatePair([this, &crafts](uint32_t i, uint32_t j) {
+        if (crafts[i]->resolveCollisionWith(*crafts[j])) {
+            if (raceActive) {
+                const uint8_t teamI = crafts[i]->getTeamId();
+                const uint8_t teamJ = crafts[j]->getTeamId();
+                if (teamI != teamJ && teamI < Config::NUM_TEAMS && teamJ < Config::NUM_TEAMS) {
+                    const size_t countI = teamCounts[teamI];
+                    const size_t countJ = teamCounts[teamJ];
+                    const size_t total = countI + countJ;
+
+                    static uint32_t rng = 0x853c49e6;
+                    rng ^= rng << 13;
+                    rng ^= rng >> 17;
+                    rng ^= rng << 5;
+
+                    if (total > 0 && (rng % total) < countI) {
+                        crafts[j]->setTeam(teamI, crafts[i]->getColor());
+                        if (teamCounts[teamJ] > 0) teamCounts[teamJ]--;
+                        teamCounts[teamI]++;
+                    } else {
+                        crafts[i]->setTeam(teamJ, crafts[j]->getColor());
+                        if (teamCounts[teamI] > 0) teamCounts[teamI]--;
+                        teamCounts[teamJ]++;
+                    }
+                }
+            }
+        }
     });
 }
  
@@ -72,6 +99,7 @@ void OOPSimulation::setEntityCount(size_t count) {
  
     if (count < entities.size()) {
         entities.resize(count);
+        recomputeTeamCounts();
     } else {
         spawnEntities(count - entities.size());
     }
@@ -133,15 +161,64 @@ void OOPSimulation::spawnEntities(size_t count) {
         if (std::abs(velX) < 15.0f) velX = (velX < 0.0f) ? -25.0f : 25.0f;
         if (std::abs(velY) < 15.0f) velY = (velY < 0.0f) ? -25.0f : 25.0f;
  
+        uint8_t team = 0;
+        Color col = Config::COLOR_BALL_OOP;
+        if (raceActive) {
+            team = static_cast<uint8_t>(entities.size() % Config::NUM_TEAMS);
+            col = Config::TEAMS[team].color;
+        }
+        if (team < Config::NUM_TEAMS) {
+            teamCounts[team]++;
+        }
+
         entities.push_back(std::make_unique<Ufo>(
             nextEntityId++,
             posX,
             posY,
             velX,
             velY,
+            team,
+            col,
             radius
         ));
     }
 }
- 
- 
+
+void OOPSimulation::startRace() {
+    raceActive = true;
+    teamCounts.fill(0);
+    for (size_t i = 0; i < entities.size(); ++i) {
+        if (auto* craft = entities[i]->asSpaceCraft()) {
+            uint8_t team = static_cast<uint8_t>(i % Config::NUM_TEAMS);
+            craft->setTeam(team, Config::TEAMS[team].color);
+            teamCounts[team]++;
+        }
+    }
+}
+
+void OOPSimulation::stopRace() {
+    raceActive = false;
+    teamCounts.fill(0);
+    for (auto& entity : entities) {
+        if (auto* craft = entity->asSpaceCraft()) {
+            craft->setTeam(0, Config::COLOR_BALL_OOP);
+        }
+    }
+    teamCounts[0] = entities.size();
+}
+
+std::array<size_t, Config::NUM_TEAMS> OOPSimulation::getTeamCounts() const {
+    return teamCounts;
+}
+
+void OOPSimulation::recomputeTeamCounts() {
+    teamCounts.fill(0);
+    for (const auto& entity : entities) {
+        if (const auto* craft = entity->asSpaceCraft()) {
+            uint8_t team = craft->getTeamId();
+            if (team < Config::NUM_TEAMS) {
+                teamCounts[team]++;
+            }
+        }
+    }
+}

@@ -2,6 +2,7 @@
 #include <raylib.h>
 #include <imgui.h>
 #include <rlImGui.h>
+#include <cstdio>
 
 void UIManager::init() {
     rlImGuiSetup(true);
@@ -15,7 +16,7 @@ void UIManager::render(UIState& state, ISimulation* activeSim) {
     rlImGuiBegin();
 
     ImGui::SetNextWindowPos(ImVec2(15.0f, 15.0f), ImGuiCond_FirstUseEver);
-    ImGui::SetNextWindowSize(ImVec2(360.0f, 320.0f), ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowSize(ImVec2(380.0f, 530.0f), ImGuiCond_FirstUseEver);
 
     if (ImGui::Begin("Alien Invasion Control Panel")) {
         if (activeSim) {
@@ -55,6 +56,58 @@ void UIManager::render(UIState& state, ISimulation* activeSim) {
             }
         }
         ImGui::Checkbox("Show Spatial Grid", &state.showSpatialGrid);
+
+        ImGui::Separator();
+
+        ImGui::Text("Color Race (4-Team):");
+        if (activeSim) {
+            if (!activeSim->isRaceActive()) {
+                ImGui::TextDisabled("Status: Normal");
+                if (ImGui::Button("Start 4-Team Color Race", ImVec2(-1.0f, 28.0f))) {
+                    activeSim->startRace();
+                }
+            } else {
+                auto counts = activeSim->getTeamCounts();
+                size_t total = activeSim->getEntityCount();
+                int winningTeam = -1;
+
+                for (size_t t = 0; t < Config::NUM_TEAMS; ++t) {
+                    const auto& team = Config::TEAMS[t];
+                    float fraction = (total > 0) ? (static_cast<float>(counts[t]) / static_cast<float>(total)) : 0.0f;
+                    float pct = fraction * 100.0f;
+
+                    ImVec4 teamColorVec(team.color.r / 255.0f, team.color.g / 255.0f, team.color.b / 255.0f, 1.0f);
+                    ImGui::TextColored(teamColorVec, "%s: %zu (%.1f%%)", team.name, counts[t], pct);
+
+                    char overlay[32];
+                    snprintf(overlay, sizeof(overlay), "%.1f%%", pct);
+                    ImGui::PushStyleColor(ImGuiCol_PlotHistogram, teamColorVec);
+                    ImGui::ProgressBar(fraction, ImVec2(-1.0f, 14.0f), overlay);
+                    ImGui::PopStyleColor();
+
+                    if (total > 0 && counts[t] == total) {
+                        winningTeam = static_cast<int>(t);
+                    }
+                }
+
+                if (winningTeam >= 0) {
+                    const auto& winner = Config::TEAMS[winningTeam];
+                    ImVec4 winColorVec(winner.color.r / 255.0f, winner.color.g / 255.0f, winner.color.b / 255.0f, 1.0f);
+                    ImGui::Spacing();
+                    ImGui::TextColored(winColorVec, ">>> %s WON THE RACE! <<<", winner.name);
+                }
+
+                ImGui::Spacing();
+                float halfWidth = (ImGui::GetContentRegionAvail().x - ImGui::GetStyle().ItemSpacing.x) * 0.5f;
+                if (ImGui::Button("Restart Race", ImVec2(halfWidth, 26.0f))) {
+                    activeSim->startRace();
+                }
+                ImGui::SameLine();
+                if (ImGui::Button("Reset to Normal", ImVec2(halfWidth, 26.0f))) {
+                    activeSim->stopRace();
+                }
+            }
+        }
 
         ImGui::Separator();
 

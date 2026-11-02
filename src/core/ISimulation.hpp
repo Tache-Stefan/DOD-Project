@@ -2,6 +2,8 @@
 
 #include <cstddef>
 #include <string_view>
+#include <array>
+#include "Config.hpp"
 
 enum class SimArchitecture {
     OOP,
@@ -33,4 +35,9 @@ public:
 
     virtual void setCollisionsEnabled(bool enabled) = 0;
     [[nodiscard]] virtual bool areCollisionsEnabled() const = 0;
+
+    virtual void startRace() = 0;
+    virtual void stopRace() = 0;
+    [[nodiscard]] virtual bool isRaceActive() const = 0;
+    [[nodiscard]] virtual std::array<size_t, Config::NUM_TEAMS> getTeamCounts() const = 0;
 };
