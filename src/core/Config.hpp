@@ -13,10 +13,11 @@ namespace Config {
     inline constexpr size_t MIN_ENTITIES     = 100;
     inline constexpr size_t MAX_ENTITIES     = 100000;
 
-    inline constexpr float BALL_RADIUS          = 4.0f;
+    inline constexpr float BALL_RADIUS          = 2.0f;
     inline constexpr float BALL_MASS            = 1.0f;
     inline constexpr float BALL_MAX_SPAWN_SPEED = 120.0f;
     inline constexpr float SPAWN_BORDER_PADDING = 5.0f;
+    inline constexpr float GRID_CELL_SIZE       = BALL_RADIUS * 4.0f;
 
     inline constexpr float RESTITUTION         = 1.0f; // 1.0 = fully elastic
     inline constexpr float DEFAULT_SIM_SPEED   = 1.0f;

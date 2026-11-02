@@ -3,6 +3,7 @@
 #include "core/ISimulation.hpp"
 #include "core/Config.hpp"
 #include "physics/Physics.hpp"
+#include "physics/SpatialGrid.hpp"
 #include "raylib.h"
 
 #include <vector>
@@ -18,6 +19,7 @@ public:
     void init(size_t initialEntities, float worldWidth, float worldHeight) override {
         m_worldWidth = worldWidth;
         m_worldHeight = worldHeight;
+        m_grid.init(m_worldWidth, m_worldHeight, Config::GRID_CELL_SIZE);
         setEntityCount(initialEntities);
     }
 
@@ -28,15 +30,18 @@ public:
             Physics::integratePosition(m_posX[i], m_posY[i], m_velX[i], m_velY[i], dt);
         }
 
-        if (m_collisionsEnabled) {
+        if (m_collisionsEnabled && count > 1) {
+            m_grid.clear(count);
             for (size_t i = 0; i < count; ++i) {
-                for (size_t j = i + 1; j < count; ++j) {
-                    Physics::resolveCircleCollision(
-                        m_posX[i], m_posY[i], m_velX[i], m_velY[i], m_radius[i],
-                        m_posX[j], m_posY[j], m_velX[j], m_velY[j], m_radius[j]
-                    );
-                }
+                m_grid.insert(static_cast<uint32_t>(i), m_posX[i], m_posY[i]);
             }
+
+            m_grid.forEachCandidatePair([this](uint32_t i, uint32_t j) {
+                Physics::resolveCircleCollision(
+                    m_posX[i], m_posY[i], m_velX[i], m_velY[i], m_radius[i],
+                    m_posX[j], m_posY[j], m_velX[j], m_velY[j], m_radius[j]
+                );
+            });
         }
 
         for (size_t i = 0; i < count; ++i) {
@@ -126,6 +131,7 @@ public:
     void setWorldBounds(float width, float height) override {
         m_worldWidth = width;
         m_worldHeight = height;
+        m_grid.setWorldBounds(width, height);
     }
 
     void setCollisionsEnabled(bool enabled) noexcept override {
@@ -143,6 +149,7 @@ private:
     std::vector<float> m_velY;
     std::vector<float> m_radius;
 
+    SpatialGrid m_grid;
     float m_worldWidth = static_cast<float>(Config::WINDOW_WIDTH);
     float m_worldHeight = static_cast<float>(Config::WINDOW_HEIGHT);
     bool m_collisionsEnabled = true;
