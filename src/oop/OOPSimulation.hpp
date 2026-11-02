@@ -29,7 +29,12 @@ public:
  
     void setCollisionsEnabled(bool enabled) noexcept override { collisionsEnabled = enabled; }
     [[nodiscard]] bool areCollisionsEnabled() const noexcept override { return collisionsEnabled; }
- 
+
+    void startRace() override;
+    void stopRace() override;
+    [[nodiscard]] bool isRaceActive() const noexcept override { return raceActive; }
+    [[nodiscard]] std::array<size_t, Config::NUM_TEAMS> getTeamCounts() const override;
+
     [[nodiscard]] const std::vector<std::unique_ptr<Actor>>& getEntities() const noexcept {
         return entities;
     }
@@ -37,11 +42,14 @@ public:
 private:
     void spawnEntities(size_t count);
     void resolveCollisions();
- 
+    void recomputeTeamCounts();
+
     std::vector<std::unique_ptr<Actor>> entities;
     SpatialGrid grid;
     float worldWidth;
     float worldHeight;
     uint32_t nextEntityId;
     bool collisionsEnabled = true;
+    bool raceActive = false;
+    std::array<size_t, Config::NUM_TEAMS> teamCounts{};
 };

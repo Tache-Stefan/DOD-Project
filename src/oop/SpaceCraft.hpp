@@ -6,13 +6,17 @@
 
 class SpaceCraft : public Actor {
 public:
-    SpaceCraft(uint32_t id, float posX, float posY, float velX, float velY, float radius = Config::BALL_RADIUS)
+    SpaceCraft(uint32_t id, float posX, float posY, float velX, float velY,
+               uint8_t teamId = 0, Color color = Config::TEAMS[0].color,
+               float radius = Config::BALL_RADIUS)
         : Actor(id),
           posX(posX),
           posY(posY),
           velX(velX),
           velY(velY),
-          radius(radius > 0.0f ? radius : Config::BALL_RADIUS) {}
+          radius(radius > 0.0f ? radius : Config::BALL_RADIUS),
+          teamId(teamId),
+          color(color) {}
 
     ~SpaceCraft() override = default;
 
@@ -48,10 +52,19 @@ public:
     [[nodiscard]] float getRadius() const noexcept { return radius; }
     void setRadius(float r) noexcept { radius = r; }
 
+    [[nodiscard]] uint8_t getTeamId() const noexcept { return teamId; }
+    [[nodiscard]] Color getColor() const noexcept { return color; }
+    void setTeam(uint8_t newTeamId, Color newColor) noexcept {
+        teamId = newTeamId;
+        color = newColor;
+    }
+
 protected:
     float posX;
     float posY;
     float velX;
     float velY;
     float radius;
+    uint8_t teamId;
+    Color color;
 };
