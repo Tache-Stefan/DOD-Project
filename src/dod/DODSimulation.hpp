@@ -58,6 +58,10 @@ public:
         }
     }
 
+    void renderDebug() const override {
+        m_grid.drawDebug();
+    }
+
     void setEntityCount(size_t count) override {
         const size_t current = m_posX.size();
 

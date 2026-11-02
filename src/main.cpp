@@ -72,6 +72,10 @@ int main() {
 
         currentSim->render();
 
+        if (uiState.showSpatialGrid) {
+            currentSim->renderDebug();
+        }
+
         uiManager.render(uiState, currentSim.get());
 
         EndDrawing();

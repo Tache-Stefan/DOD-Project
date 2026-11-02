@@ -17,6 +17,7 @@ public:
     void init(size_t initialEntities, float worldWidth, float worldHeight) override;
     void update(float dt) override;
     void render() const override;
+    void renderDebug() const override;
  
     void setEntityCount(size_t count) override;
     [[nodiscard]] size_t getEntityCount() const override;

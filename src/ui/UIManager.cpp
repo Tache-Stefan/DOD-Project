@@ -54,12 +54,17 @@ void UIManager::render(UIState& state, ISimulation* activeSim) {
                 activeSim->setCollisionsEnabled(state.enableCollisions);
             }
         }
+        ImGui::Checkbox("Show Spatial Grid", &state.showSpatialGrid);
 
         ImGui::Separator();
 
         ImGui::Text("Telemetry:");
         float dt = GetFrameTime();
         ImGui::Text("FPS: %d (%.2f ms)", GetFPS(), dt * 1000.0f);
+
+        if (state.showSpatialGrid) {
+            ImGui::TextColored(ImVec4(0.2f, 0.85f, 1.0f, 1.0f), "Grid Cell: %.1f px", Config::GRID_CELL_SIZE);
+        }
 
         if (activeSim) {
             ImGui::Text("Active UFOs: %zu", activeSim->getEntityCount());

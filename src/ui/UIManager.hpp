@@ -8,6 +8,7 @@ struct UIState {
     float simSpeed = Config::DEFAULT_SIM_SPEED;
     bool isPaused = false;
     bool enableCollisions = true;
+    bool showSpatialGrid = false;
     SimArchitecture selectedArch = SimArchitecture::OOP;
 };
 
