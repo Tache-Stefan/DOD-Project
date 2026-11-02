@@ -60,6 +60,10 @@ void OOPSimulation::render() const {
         entity->render();
     }
 }
+
+void OOPSimulation::renderDebug() const {
+    grid.drawDebug();
+}
  
 void OOPSimulation::setEntityCount(size_t count) {
     if (count == entities.size()) {

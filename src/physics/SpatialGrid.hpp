@@ -1,6 +1,7 @@
 #pragma once
 
 #include "core/Config.hpp"
+#include <raylib.h>
 #include <vector>
 #include <cstdint>
 #include <cstddef>
@@ -105,6 +106,38 @@ public:
     [[nodiscard]] size_t getTotalCells() const noexcept { return static_cast<size_t>(m_cols * m_rows); }
     [[nodiscard]] size_t getMemoryBytes() const noexcept {
         return (m_head.capacity() * sizeof(int32_t)) + (m_next.capacity() * sizeof(int32_t)) + sizeof(*this);
+    }
+
+    void drawDebug(bool showOccupiedCells = true) const {
+        const Color gridLineColor = { 255, 255, 255, 20 };
+        const Color occupiedColor = { 0, 220, 255, 30 };
+
+        for (int cx = 0; cx <= m_cols; ++cx) {
+            const float x = static_cast<float>(cx) * m_cellSize;
+            DrawLineV(Vector2{ x, 0.0f }, Vector2{ x, m_worldHeight }, gridLineColor);
+        }
+
+        for (int cy = 0; cy <= m_rows; ++cy) {
+            const float y = static_cast<float>(cy) * m_cellSize;
+            DrawLineV(Vector2{ 0.0f, y }, Vector2{ m_worldWidth, y }, gridLineColor);
+        }
+
+        if (showOccupiedCells) {
+            for (int cy = 0; cy < m_rows; ++cy) {
+                for (int cx = 0; cx < m_cols; ++cx) {
+                    const int cellIdx = cy * m_cols + cx;
+                    if (cellIdx < static_cast<int>(m_head.size()) && m_head[cellIdx] != -1) {
+                        DrawRectangle(
+                            static_cast<int>(static_cast<float>(cx) * m_cellSize),
+                            static_cast<int>(static_cast<float>(cy) * m_cellSize),
+                            static_cast<int>(m_cellSize),
+                            static_cast<int>(m_cellSize),
+                            occupiedColor
+                        );
+                    }
+                }
+            }
+        }
     }
 
 private:

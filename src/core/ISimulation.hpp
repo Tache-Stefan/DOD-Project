@@ -17,6 +17,7 @@ public:
     virtual void update(float dt) = 0;
 
     virtual void render() const = 0;
+    virtual void renderDebug() const {}
 
     virtual void setEntityCount(size_t count) = 0;
 
