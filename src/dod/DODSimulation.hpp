@@ -2,6 +2,7 @@
 
 #include "core/ISimulation.hpp"
 #include "core/Config.hpp"
+#include "core/CircleTexture.hpp"
 #include "physics/Physics.hpp"
 #include "physics/SpatialGrid.hpp"
 #include "raylib.h"
@@ -53,12 +54,7 @@ public:
     void render() const override {
         const size_t count = m_posX.size();
         for (size_t i = 0; i < count; ++i) {
-            DrawCircle(
-                static_cast<int>(m_posX[i]),
-                static_cast<int>(m_posY[i]),
-                m_radius[i],
-                Config::COLOR_BALL_DOD
-            );
+            CircleTexture::draw(m_posX[i], m_posY[i], m_radius[i], Config::COLOR_BALL_DOD);
         }
     }
 

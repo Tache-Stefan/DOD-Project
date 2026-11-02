@@ -1,6 +1,7 @@
 #include <raylib.h>
 #include "core/Config.hpp"
 #include "core/ISimulation.hpp"
+#include "core/CircleTexture.hpp"
 #include "oop/OOPSimulation.hpp"
 #include "dod/DODSimulation.hpp"
 #include "ui/UIManager.hpp"
@@ -21,6 +22,7 @@ static std::unique_ptr<ISimulation> createSimulation(SimArchitecture arch, size_
 int main() {
     SetConfigFlags(FLAG_WINDOW_RESIZABLE);
     InitWindow(Config::WINDOW_WIDTH, Config::WINDOW_HEIGHT, Config::WINDOW_TITLE);
+    CircleTexture::init();
 
     UIManager uiManager;
     uiManager.init();
@@ -76,6 +78,7 @@ int main() {
     }
 
     uiManager.shutdown();
+    CircleTexture::shutdown();
     CloseWindow();
 
     return 0;
